@@ -58,7 +58,7 @@ export const FileList: React.FC<FileListProps> = ({ files, onRemove, onRetry }) 
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
         <h3 className="text-sm font-medium text-gray-700">
-          待上传文件 ({files.length})
+          上传文件列表 ({files.length})
         </h3>
       </div>
       <div className="max-h-64 overflow-y-auto">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { Task, TaskStatus } from '../types';
 
 interface TaskListProps {
@@ -61,7 +61,18 @@ export const TaskList: React.FC<TaskListProps> = ({
     return labels[type] || type;
   };
 
-  const allSelected = tasks.length > 0 && tasks.every((t) => selectedIds.has(t.id));
+  const completedTasks = tasks.filter((t) => t.status === 'completed');
+  const completedSelectedCount = completedTasks.filter((t) => selectedIds.has(t.id)).length;
+  const allCompletedSelected = completedTasks.length > 0 && completedSelectedCount === completedTasks.length;
+  const someCompletedSelected = completedSelectedCount > 0 && completedSelectedCount < completedTasks.length;
+
+  const selectAllCheckboxRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (selectAllCheckboxRef.current) {
+      selectAllCheckboxRef.current.indeterminate = someCompletedSelected;
+    }
+  }, [someCompletedSelected]);
 
   if (tasks.length === 0) {
     return (
@@ -87,8 +98,9 @@ export const TaskList: React.FC<TaskListProps> = ({
       <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <input
+            ref={selectAllCheckboxRef}
             type="checkbox"
-            checked={allSelected}
+            checked={allCompletedSelected}
             onChange={onSelectAll}
             className="w-4 h-4 text-blue-600 rounded"
           />

@@ -30,6 +30,19 @@ export default function Home() {
     format: 'jpeg',
     quality: undefined,
   });
+
+  const handleProcessTypeChange = useCallback((type: ProcessType) => {
+    setProcessType(type);
+    if (type === 'resize' && !taskOptions.resize) {
+      setTaskOptions((prev) => ({
+        ...prev,
+        resize: {
+          maxWidth: 1920,
+          maxHeight: 1080,
+        },
+      }));
+    }
+  }, [taskOptions.resize]);
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [config, setConfig] = useState({
@@ -210,7 +223,15 @@ export default function Home() {
         .filter((f) => f.uploadId)
         .map((f) => f.uploadId!);
 
-      const result = await api.processBatch(uploadIds, processType, taskOptions);
+      let finalOptions = { ...taskOptions };
+      if (processType === 'resize' && !finalOptions.resize) {
+        finalOptions.resize = {
+          maxWidth: 1920,
+          maxHeight: 1080,
+        };
+      }
+
+      const result = await api.processBatch(uploadIds, processType, finalOptions);
 
       chunkUploader.clearCompleted();
       setFiles(chunkUploader.getAllFiles());
@@ -344,8 +365,10 @@ export default function Home() {
     }
   }, []);
 
-  const pendingFiles = files.filter((f) => f.status !== 'completed');
-  const selectedCount = selectedTaskIds.size;
+  const selectedCompletedCount = Array.from(selectedTaskIds).filter((id) => {
+    const task = tasks.find((t) => t.id === id);
+    return task?.status === 'completed';
+  }).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -390,9 +413,9 @@ export default function Home() {
               supportedFormats={config.supportedFormats}
             />
 
-            {pendingFiles.length > 0 && (
+            {files.length > 0 && (
               <FileList
-                files={pendingFiles}
+                files={files}
                 onRemove={handleRemoveFile}
                 onRetry={handleRetryFile}
               />
@@ -415,7 +438,7 @@ export default function Home() {
             <StatsPanel stats={stats} uploadStats={uploadStats.total > 0 ? uploadStats : undefined} />
             <ControlPanel
               processType={processType}
-              onProcessTypeChange={setProcessType}
+              onProcessTypeChange={handleProcessTypeChange}
               options={taskOptions}
               onOptionsChange={setTaskOptions}
               onStartProcessing={handleStartProcessing}
@@ -426,7 +449,7 @@ export default function Home() {
               queuePaused={stats.isPaused}
               onToggleQueue={handleToggleQueue}
               onBatchDownload={handleBatchDownload}
-              selectedCount={selectedCount}
+              selectedCount={selectedCompletedCount}
               onClearCompleted={handleClearCompleted}
             />
 

@@ -144,11 +144,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               value={options.resize?.maxWidth ? 'max' : options.resize?.scale ? 'scale' : 'custom'}
               onChange={(e) => {
                 if (e.target.value === 'max') {
-                  handleResizeChange({ maxWidth: 1920, maxHeight: 1080 });
+                  onOptionsChange({
+                    ...options,
+                    resize: { maxWidth: 1920, maxHeight: 1080 },
+                  });
                 } else if (e.target.value === 'scale') {
-                  handleResizeChange({ scale: 0.5 });
+                  onOptionsChange({
+                    ...options,
+                    resize: { scale: 0.5 },
+                  });
                 } else {
-                  handleResizeChange({ width: 800, height: 600 });
+                  onOptionsChange({
+                    ...options,
+                    resize: { width: 800, height: 600 },
+                  });
                 }
               }}
             >
